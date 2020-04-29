@@ -1,4 +1,4 @@
-defmodule ElixirLearning.RL_D1.State do
+defmodule RlStudy.D1.State do
   defstruct row: 0, column: 0
 
   def _repr_(state) do

@@ -1,6 +1,6 @@
-defmodule ElixirLearning do
+defmodule RlStudy do
   @moduledoc """
-  Documentation for `ElixirLearning`.
+  Documentation for `RlStudy`.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule ElixirLearning do
 
   ## Examples
 
-      iex> ElixirLearning.hello()
+      iex> RlStudy.hello()
       :world
 
   """

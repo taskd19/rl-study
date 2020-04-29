@@ -1,5 +1,5 @@
 {
-	"name": "Elixir learning",
+	"name": "RL study",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "elixir",
 	"workspaceFolder": "/workspace",
