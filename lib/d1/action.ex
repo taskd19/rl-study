@@ -18,4 +18,13 @@ defmodule RlStudy.D1.Action do
   def right() do
     :right
   end
+
+  def opsite_action(action) do
+    case action do
+      :up -> :down
+      :down -> :up
+      :left -> :right
+      :right -> :left
+    end
+  end
 end
