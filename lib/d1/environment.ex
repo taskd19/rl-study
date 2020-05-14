@@ -1,8 +1,13 @@
 defmodule RlStudy.D1.Environment do
   alias RlStudy.D1.State
   alias RlStudy.D1.Action
+  require Logger
 
   defstruct [:grid, :agent_state, :move_probe, :default_reward]
+
+  def new(grid) do
+    new(grid, 0.8)
+  end
 
   def new(grid, move_probe) do
     %RlStudy.D1.Environment{
@@ -42,7 +47,7 @@ defmodule RlStudy.D1.Environment do
   end
 
   def transit_func(environment, state, action) do
-    transition_probes = []
+    transition_probes = %{}
 
     if !can_action_at(environment, state) do
       transition_probes
@@ -50,22 +55,26 @@ defmodule RlStudy.D1.Environment do
 
     opsite_direction = Action.opsite_action(action)
 
-    environment.actions()
+    actions()
     |> Enum.reduce(transition_probes, fn a, acc ->
       next_state = move(environment, state, a)
 
       # https://elixir-lang.org/getting-started/pattern-matching.html#the-pin-operator
       Map.update(acc, next_state, 0, fn value ->
         case a do
-          ^action -> value + environment.move_prob
-          ^opsite_direction -> value + (1 - environment.move_prob) / 2
+          ^action -> value + environment.move_probe
+          ^opsite_direction -> value + (1 - environment.move_probe) / 2
+          _ -> 0
         end
       end)
     end)
   end
 
   def can_action_at(environment, state) do
-    environment.grid[state.row][state.column] == 0
+    environment.grid
+    |> Enum.at(state.row)
+    |> Enum.at(state.column)
+    |> Kernel.==(0)
   end
 
   defp move(environment, state, action) do
@@ -95,5 +104,54 @@ defmodule RlStudy.D1.Environment do
       end
 
     next_state
+  end
+
+  def reward_func(environment, state) do
+    case environment.grid[state.row][state.column] do
+      1 -> %{reward: 1, done: true}
+      -1 -> %{reward: -1, done: true}
+      _ -> %{reward: environment.default_reward, done: false}
+    end
+  end
+
+  def reset(environment) do
+    new_env = %{environment | agent_state: State.new(row_length(environment) - 1, 0)}
+    %{environment: new_env, agent_state: new_env.agent_state}
+  end
+
+  def step(environment, action) do
+    %{next_state: next_state, reward: reward, done: done} =
+      transit(environment, environment.agent_state, action)
+
+    if next_state != nil do
+      %{
+        environment: %{environment | agent_state: next_state},
+        next_state: next_state,
+        reward: reward,
+        done: done
+      }
+    else
+      %{environment: environment, next_state: next_state, reward: reward, done: done}
+    end
+  end
+
+  def transit(environment, state, action) do
+    transit_probes = transit_func(environment, state, action)
+
+    if length(transit_probes) == 0 do
+      %{environment: environment, next_state: nil, reward: nil, done: true}
+    else
+      %{next_states: next_states, probes: probes} =
+        Enum.reduce(transit_probes, {}, fn s, acc ->
+          next_states = [acc.next_states | s]
+          probes = [acc.probes | transit_probes[s]]
+          %{next_states: next_states, probes: probes}
+        end)
+
+      # TODO
+      # next_state = rando
+      %{reward: reward, done: done} = reward_func(environment, state)
+      %{next_state: next_states[0], reward: reward, done: done}
+    end
   end
 end
