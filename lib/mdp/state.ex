@@ -2,7 +2,7 @@ defmodule RlStudy.MDP.State do
   @typedoc """
   Custom type of State.
   """
-  @type t :: %RlStudy.MDP.State{row: non_neg_integer(), column: non_neg_integer()}
+  @type t :: %RlStudy.MDP.State{row: integer, column: integer}
   defstruct row: -1, column: -1
 
   @doc """
