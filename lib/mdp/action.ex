@@ -1,4 +1,4 @@
-defmodule RlStudy.D1.Action do
+defmodule RlStudy.MDP.Action do
   @moduledoc """
   ref: https://gist.github.com/smpallen99/9995893
   """

@@ -1,12 +1,12 @@
-defmodule RlStudy.D1.State do
+defmodule RlStudy.MDP.State do
   defstruct row: -1, column: -1
 
   def new() do
-    %RlStudy.D1.State{}
+    %RlStudy.MDP.State{}
   end
 
   def new(row, column) when is_integer(row) and is_integer(column) do
-    %RlStudy.D1.State{row: row, column: column}
+    %RlStudy.MDP.State{row: row, column: column}
   end
 
   def new(value) when is_map(value) do

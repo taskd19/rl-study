@@ -1,6 +1,6 @@
-defmodule RlStudy.D1.Environment do
-  alias RlStudy.D1.State
-  alias RlStudy.D1.Action
+defmodule RlStudy.MDP.Environment do
+  alias RlStudy.MDP.State
+  alias RlStudy.MDP.Action
   require Logger
 
   defstruct [:grid, :agent_state, :move_probe, :default_reward]
@@ -10,7 +10,7 @@ defmodule RlStudy.D1.Environment do
   end
 
   def new(grid, move_probe) do
-    %RlStudy.D1.Environment{
+    %RlStudy.MDP.Environment{
       grid: grid,
       agent_state: State.new(),
       default_reward: -0.04,
@@ -138,7 +138,7 @@ defmodule RlStudy.D1.Environment do
   def transit(environment, state, action) do
     transit_probes = transit_func(environment, state, action)
 
-    if length(transit_probes) == 0 do
+    if Kernel.map_size(transit_probes) == 0 do
       %{environment: environment, next_state: nil, reward: nil, done: true}
     else
       %{next_states: next_states, probes: probes} =
