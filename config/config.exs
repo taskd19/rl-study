@@ -5,5 +5,5 @@ config :logger,
   backends: [:console]
 
 config :logger, :console,
-  format: "$time {$metadata}[$level] $levelpad$message\n",
+  format: "\n$time {$metadata}[$level] $levelpad$message\n",
   metadata: [:application, :mfa, :line]
