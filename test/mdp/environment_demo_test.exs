@@ -1,12 +1,18 @@
-defmodule RlStudy.D1.EnvironmentDemo do
-  alias RlStudy.D1.Agent
-  alias RlStudy.D1.Environment
+defmodule RlStudy.MDP.EnvironmentDemoTest do
+  require Logger
+  use ExUnit.Case
 
-  def demo() do
+  alias RlStudy.MDP.Agent
+  alias RlStudy.MDP.Environment
+
+  doctest RlStudy.MDP.Action
+
+  test "demo test" do
     grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
     env = Environment.new(grid)
     agent = Agent.new(env)
-    IO.inspect(agent)
+    Logger.debug("env: #{inspect(env)}")
+    Logger.debug("agent: #{inspect(agent)}")
 
     state = Environment.reset(env)
     total_reward = 0
@@ -14,7 +20,7 @@ defmodule RlStudy.D1.EnvironmentDemo do
 
     action = Agent.policy(agent, state)
     next_s = Environment.step(env, action)
-    IO.inspect(next_s)
+    Logger.debug("next_s: #{inspect(next_s)}")
     # for i <- 0..9 do
     #   state = Environment.reset(env)
     #   total_reward = 0
