@@ -128,7 +128,7 @@ defmodule RlStudy.MDP.Environment do
           RlStudy.MDP.Environment.t(),
           RlStudy.MDP.State.t(),
           RlStudy.MDP.Action.t()
-        ) :: %{RlStudy.MDP.Action.t() => float}
+        ) :: %{optional(RlStudy.MDP.Action.t()) => float}
   def transit_func(environment, state, action) do
     transition_probes = %{}
 
