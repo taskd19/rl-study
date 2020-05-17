@@ -6,8 +6,11 @@ defmodule RlStudy.MDP.EnvironmentDemoTest do
   alias RlStudy.MDP.Environment
 
   doctest RlStudy.MDP.Action
+  doctest RlStudy.MDP.Agent
+  doctest RlStudy.MDP.Environment
+  doctest RlStudy.MDP.State
 
-  test "demo test" do
+  test "MDP demo" do
     grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
     env = Environment.new(grid)
     agent = Agent.new(env)
@@ -19,8 +22,8 @@ defmodule RlStudy.MDP.EnvironmentDemoTest do
     done = false
 
     action = Agent.policy(agent, state)
-    next_s = Environment.step(env, action)
-    Logger.debug("next_s: #{inspect(next_s)}")
+    # next_s = Environment.step(env, action)
+    # Logger.debug("next_s: #{inspect(next_s)}")
     # for i <- 0..9 do
     #   state = Environment.reset(env)
     #   total_reward = 0

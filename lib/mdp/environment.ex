@@ -3,12 +3,43 @@ defmodule RlStudy.MDP.Environment do
   alias RlStudy.MDP.Action
   require Logger
 
+  @type grid_t :: [[integer]]
+  @type t :: %RlStudy.MDP.Environment{
+          grid: grid_t(),
+          agent_state: RlStudy.MDP.State.t(),
+          move_probe: float,
+          default_reward: float
+        }
   defstruct [:grid, :agent_state, :move_probe, :default_reward]
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> RlStudy.MDP.Environment.new(grid)
+      %RlStudy.MDP.Environment{
+        agent_state: %RlStudy.MDP.State{column: -1, row: -1},
+        default_reward: -0.04,
+        grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]],
+        move_probe: 0.8
+      }
+  """
+  @spec new(grid_t()) :: RlStudy.MDP.Environment.t()
   def new(grid) do
     new(grid, 0.8)
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> RlStudy.MDP.Environment.new(grid, 0.3)
+      %RlStudy.MDP.Environment{
+        agent_state: %RlStudy.MDP.State{column: -1, row: -1},
+        default_reward: -0.04,
+        grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]],
+        move_probe: 0.3
+      }
+  """
+  @spec new(grid_t(), float) :: RlStudy.MDP.Environment.t()
   def new(grid, move_probe) do
     %RlStudy.MDP.Environment{
       grid: grid,
@@ -18,18 +49,62 @@ defmodule RlStudy.MDP.Environment do
     }
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> RlStudy.MDP.Environment.row_length(env)
+      3
+  """
+  @spec row_length(t()) :: non_neg_integer()
   def row_length(environment) do
     length(environment.grid)
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> RlStudy.MDP.Environment.column_length(env)
+      4
+  """
+  @spec column_length(t()) :: non_neg_integer()
   def column_length(environment) do
-    length(environment.grid[0])
+    environment.grid
+    |> Enum.at(0)
+    |> length()
   end
 
+  @doc """
+  # Examples
+      iex> RlStudy.MDP.Environment.actions()
+      [:up, :down, :left, :right]
+  """
+  @spec actions :: [RlStudy.MDP.Action.t()]
   def actions() do
     [Action.up(), Action.down(), Action.left(), Action.right()]
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> RlStudy.MDP.Environment.states(env)
+      [
+        %RlStudy.MDP.State{column: 0, row: 0},
+        %RlStudy.MDP.State{column: 1, row: 0},
+        %RlStudy.MDP.State{column: 2, row: 0},
+        %RlStudy.MDP.State{column: 3, row: 0},
+        %RlStudy.MDP.State{column: 0, row: 1},
+        %RlStudy.MDP.State{column: 2, row: 1},
+        %RlStudy.MDP.State{column: 3, row: 1},
+        %RlStudy.MDP.State{column: 0, row: 2},
+        %RlStudy.MDP.State{column: 1, row: 2},
+        %RlStudy.MDP.State{column: 2, row: 2},
+        %RlStudy.MDP.State{column: 3, row: 2}
+      ]
+  """
+  @spec states(RlStudy.MDP.Environment.t()) :: [RlStudy.MDP.State.t()]
   def states(environment) do
     environment.grid
     |> Enum.with_index()
@@ -46,6 +121,14 @@ defmodule RlStudy.MDP.Environment do
     |> Enum.filter(fn elm -> elm != nil end)
   end
 
+  @doc """
+  TODO
+  """
+  @spec transit_func(
+          RlStudy.MDP.Environment.t(),
+          RlStudy.MDP.State.t(),
+          RlStudy.MDP.Action.t()
+        ) :: %{RlStudy.MDP.Action.t() => float}
   def transit_func(environment, state, action) do
     transition_probes = %{}
 
@@ -70,6 +153,18 @@ defmodule RlStudy.MDP.Environment do
     end)
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> state = RlStudy.MDP.State.new(0,0)
+      iex> RlStudy.MDP.Environment.can_action_at(env, state)
+      true
+      iex> state2 = RlStudy.MDP.State.new(1,1)
+      iex> RlStudy.MDP.Environment.can_action_at(env, state2)
+      false
+  """
+  @spec can_action_at(RlStudy.MDP.Environment.t(), RlStudy.MDP.State.t()) :: boolean
   def can_action_at(environment, state) do
     environment.grid
     |> Enum.at(state.row)
@@ -106,19 +201,65 @@ defmodule RlStudy.MDP.Environment do
     next_state
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> state = RlStudy.MDP.State.new(0,0)
+      iex> RlStudy.MDP.Environment.reward_func(env, state)
+      %{reward: -0.04, done: false}
+      iex> state_goal = RlStudy.MDP.State.new(0,3)
+      iex> RlStudy.MDP.Environment.reward_func(env, state_goal)
+      %{reward: 1, done: true}
+      iex> state_damage = RlStudy.MDP.State.new(1,3)
+      iex> RlStudy.MDP.Environment.reward_func(env, state_damage)
+      %{reward: -1, done: true}
+  """
+  @spec reward_func(
+          RlStudy.MDP.Environment.t(),
+          RlStudy.MDP.State.t()
+        ) :: %{done: boolean, reward: float}
   def reward_func(environment, state) do
-    case environment.grid[state.row][state.column] do
+    case environment.grid |> Enum.at(state.row) |> Enum.at(state.column) do
       1 -> %{reward: 1, done: true}
       -1 -> %{reward: -1, done: true}
       _ -> %{reward: environment.default_reward, done: false}
     end
   end
 
+  @doc """
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> RlStudy.MDP.Environment.reset(env)
+      %{
+        agent_state: %RlStudy.MDP.State{column: 0, row: 2},
+        environment: %RlStudy.MDP.Environment{
+          agent_state: %RlStudy.MDP.State{column: 0, row: 2},
+          default_reward: -0.04,
+          grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]],
+          move_probe: 0.8
+        }
+      }
+  """
+  @spec reset(RlStudy.MDP.Environment.t()) :: %{
+          agent_state: RlStudy.MDP.State.t(),
+          environment: RlStudy.MDP.Environment.t()
+        }
   def reset(environment) do
     new_env = %{environment | agent_state: State.new(row_length(environment) - 1, 0)}
     %{environment: new_env, agent_state: new_env.agent_state}
   end
 
+  @doc """
+  TODO
+  """
+  @spec step(RlStudy.MDP.Environment.t(), RlStudy.MDP.Action.t()) :: %{
+          done: boolean,
+          environment: RlStudy.MDP.Environment.t(),
+          next_state: RlStudy.MDP.State.t(),
+          reward: float
+        }
   def step(environment, action) do
     %{next_state: next_state, reward: reward, done: done} =
       transit(environment, environment.agent_state, action)
@@ -135,6 +276,11 @@ defmodule RlStudy.MDP.Environment do
     end
   end
 
+  @doc """
+  TODO
+  """
+  @spec transit(RlStudy.MDP.Environment.t(), RlStudy.MDP.State.t(), RlStudy.MDP.Action.t()) ::
+          %{done: boolean, next_state: RlStudy.MDP.State.t(), reward: float}
   def transit(environment, state, action) do
     transit_probes = transit_func(environment, state, action)
 
@@ -148,7 +294,7 @@ defmodule RlStudy.MDP.Environment do
           %{next_states: next_states, probes: probes}
         end)
 
-      # TODO
+      # TODO implement probabilisitc selection
       # next_state = rando
       %{reward: reward, done: done} = reward_func(environment, state)
       %{next_state: next_states[0], reward: reward, done: done}
