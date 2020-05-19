@@ -5,5 +5,6 @@ config :logger,
   backends: [:console]
 
 config :logger, :console,
-  format: "\n$time {$metadata}[$level] $levelpad$message\n",
+  # https://hexdocs.pm/logger/Logger.Formatter.html
+  format: "\n$date $time {$metadata}[$level] $levelpad$message\n",
   metadata: [:application, :mfa, :line]
