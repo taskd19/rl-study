@@ -6,7 +6,7 @@ defmodule RlStudy.MDP.Agent do
   # Examples
       iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
       iex> env = RlStudy.MDP.Environment.new(grid)
-      iex> agent = RlStudy.MDP.Agent.new(env)
+      iex> RlStudy.MDP.Agent.new(env)
       %RlStudy.MDP.Agent{actions: [:up, :down, :left, :right]}
   """
   @spec new(RlStudy.MDP.Environment.t()) :: RlStudy.MDP.Agent.t()

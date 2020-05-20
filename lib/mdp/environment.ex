@@ -122,7 +122,18 @@ defmodule RlStudy.MDP.Environment do
   end
 
   @doc """
-  TODO
+  # Examples
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> state = RlStudy.MDP.State.new(2,0)
+      iex> RlStudy.MDP.Environment.transit_func(env, state, :up)
+      %{%RlStudy.MDP.State{column: 0, row: 1} => 0.8, %RlStudy.MDP.State{column: 0, row: 2} => 0.09999999999999998, %RlStudy.MDP.State{column: 1, row: 2} => 0.09999999999999998}
+      iex> RlStudy.MDP.Environment.transit_func(env, state, :right)
+      %{%RlStudy.MDP.State{column: 0, row: 1} => 0.09999999999999998, %RlStudy.MDP.State{column: 0, row: 2} => 0.09999999999999998, %RlStudy.MDP.State{column: 1, row: 2} => 0.8}
+      iex> RlStudy.MDP.Environment.transit_func(env, state, :down)
+      %{%RlStudy.MDP.State{column: 0, row: 1} => 0, %RlStudy.MDP.State{column: 0, row: 2} => 0.9, %RlStudy.MDP.State{column: 1, row: 2} => 0.09999999999999998}
+      iex> RlStudy.MDP.Environment.transit_func(env, state, :left)
+      %{%RlStudy.MDP.State{column: 0, row: 1} => 0.09999999999999998, %RlStudy.MDP.State{column: 0, row: 2} => 0.9, %RlStudy.MDP.State{column: 1, row: 2} => 0}
   """
   @spec transit_func(
           RlStudy.MDP.Environment.t(),
@@ -130,25 +141,35 @@ defmodule RlStudy.MDP.Environment do
           RlStudy.MDP.Action.t()
         ) :: %{optional(RlStudy.MDP.Action.t()) => float}
   def transit_func(environment, state, action) do
+    Logger.info("Transit. state: #{inspect(state)}, action: #{inspect(action)}")
+
     transition_probes = %{}
 
     if !can_action_at(environment, state) do
       transition_probes
     end
 
-    opsite_direction = Action.opsite_action(action)
+    oposite_direction = Action.opsite_action(action)
+    Logger.debug("oposite_direction: #{inspect(oposite_direction)}")
 
     actions()
     |> Enum.reduce(transition_probes, fn a, acc ->
+      Logger.info("Update probes. action: #{inspect(a)}, transit_probes: #{inspect(acc)}")
+
       next_state = move(environment, state, a)
 
-      # https://elixir-lang.org/getting-started/pattern-matching.html#the-pin-operator
-      Map.update(acc, next_state, 0, fn value ->
-        case a do
-          ^action -> value + environment.move_probe
-          ^opsite_direction -> value + (1 - environment.move_probe) / 2
-          _ -> 0
+      probe =
+        cond do
+          a == action -> environment.move_probe
+          a != oposite_direction -> (1 - environment.move_probe) / 2
+          true -> 0
         end
+
+      Logger.debug("next_state: #{inspect(next_state)}, probe: #{probe}")
+
+      # https://elixir-lang.org/getting-started/pattern-matching.html#the-pin-operator
+      Map.update(acc, next_state, probe, fn value ->
+        value + probe
       end)
     end)
   end
@@ -173,6 +194,10 @@ defmodule RlStudy.MDP.Environment do
   end
 
   defp move(environment, state, action) do
+    Logger.debug(
+      "environment: #{inspect(environment)}, state: #{inspect(state)}, action: #{inspect(action)}"
+    )
+
     if !can_action_at(environment, state) do
       raise "Can't move from here!"
     end
@@ -184,18 +209,25 @@ defmodule RlStudy.MDP.Environment do
       cond do
         action == Action.up() -> %{next_state | row: next_state.row - 1}
         action == Action.down() -> %{next_state | row: next_state.row + 1}
-        action == Action.left() -> %{next_state | column: next_state.column + 1}
+        action == Action.left() -> %{next_state | column: next_state.column - 1}
         action == Action.right() -> %{next_state | column: next_state.column + 1}
       end
 
     next_state =
       cond do
         # Check if next_state is not out of the grid
-        !(0 <= next_state.row && next_state.row < row_length(environment)) -> state
-        !(0 <= next_state.column && next_state.column < column_length(environment)) -> state
+        !(0 <= next_state.row && next_state.row < row_length(environment)) ->
+          state
+
+        !(0 <= next_state.column && next_state.column < column_length(environment)) ->
+          state
+
         # Check whether the agent bumped a block cell.
-        environment.grid[next_state.row][next_state.column] == 9 -> state
-        true -> next_state
+        environment.grid |> Enum.at(next_state.row) |> Enum.at(next_state.column) |> Kernel.==(9) ->
+          state
+
+        true ->
+          next_state
       end
 
     next_state
