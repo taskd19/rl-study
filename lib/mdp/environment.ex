@@ -154,7 +154,7 @@ defmodule RlStudy.MDP.Environment do
 
     actions()
     |> Enum.reduce(transition_probes, fn a, acc ->
-      Logger.info("Update probes. action: #{inspect(a)}, transit_probes: #{inspect(acc)}")
+      Logger.debug("Update probes. action: #{inspect(a)}, transit_probes: #{inspect(acc)}")
 
       next_state = move(environment, state, a)
 
@@ -309,7 +309,16 @@ defmodule RlStudy.MDP.Environment do
   end
 
   @doc """
-  TODO
+  # Examples
+      iex> :rand.seed(:exrop, {101, 102, 103})
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> init_state = RlStudy.MDP.State.new(2,0)
+      iex> RlStudy.MDP.Environment.transit(env, init_state, :up)
+      %{next_state: %RlStudy.MDP.State{column: 0, row: 1}, reward: -0.04, done: false}
+      iex> goal_state = RlStudy.MDP.State.new(0,3)
+      iex> RlStudy.MDP.Environment.transit(env, goal_state, :up)
+      ** (RuntimeError) Can't move from here!
   """
   @spec transit(RlStudy.MDP.Environment.t(), RlStudy.MDP.State.t(), RlStudy.MDP.Action.t()) ::
           %{done: boolean, next_state: RlStudy.MDP.State.t(), reward: float}
@@ -317,19 +326,37 @@ defmodule RlStudy.MDP.Environment do
     transit_probes = transit_func(environment, state, action)
 
     if Kernel.map_size(transit_probes) == 0 do
+      Logger.info("No transit_probes.")
       %{environment: environment, next_state: nil, reward: nil, done: true}
     else
-      %{next_states: next_states, probes: probes} =
-        Enum.reduce(transit_probes, {}, fn s, acc ->
-          next_states = [acc.next_states | s]
-          probes = [acc.probes | transit_probes[s]]
-          %{next_states: next_states, probes: probes}
-        end)
+      # https://rosettacode.org/wiki/Probabilistic_choice#Elixir
+      # How to test https://github.com/elixir-lang/elixir/blob/v1.10/lib/elixir/lib/enum.ex#L1985-L1991
+      Logger.debug("transit_probes: #{inspect(transit_probes)}")
+      next_state = prob_choice(transit_probes, :rand.uniform())
+      %{reward: reward, done: done} = reward_func(environment, next_state)
 
-      # TODO implement probabilisitc selection
-      # next_state = rando
-      %{reward: reward, done: done} = reward_func(environment, state)
-      %{next_state: next_states[0], reward: reward, done: done}
+      transit_to = %{next_state: next_state, reward: reward, done: done}
+      Logger.info("Transit to #{inspect(transit_to)}")
+      transit_to
+    end
+  end
+
+  defp prob_choice(probes, _) when Kernel.map_size(probes) == 1 do
+    probe = Enum.at(Map.keys(probes), 0)
+    Logger.debug("choice last one. probe: #{inspect(probe)}")
+    probe
+  end
+
+  defp prob_choice(probes, ran) when Kernel.map_size(probes) > 1 do
+    Logger.debug("probes: #{inspect(probes)}, ran: #{ran}")
+    state_key = Enum.at(Map.keys(probes), 0)
+    {:ok, prob} = Map.fetch(probes, state_key)
+
+    if ran < prob do
+      Logger.debug("choiced prob: #{inspect(state_key)}")
+      state_key
+    else
+      prob_choice(Map.delete(probes, state_key), ran - prob)
     end
   end
 end
