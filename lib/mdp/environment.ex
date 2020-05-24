@@ -141,7 +141,7 @@ defmodule RlStudy.MDP.Environment do
           RlStudy.MDP.Action.t()
         ) :: %{optional(RlStudy.MDP.Action.t()) => float}
   def transit_func(environment, state, action) do
-    Logger.info("Transit. state: #{inspect(state)}, action: #{inspect(action)}")
+    Logger.debug("Transit. state: #{inspect(state)}, action: #{inspect(action)}")
 
     transition_probes = %{}
 
@@ -285,6 +285,27 @@ defmodule RlStudy.MDP.Environment do
 
   @doc """
   TODO
+  # Examples
+      iex>
+      iex> :rand.seed(:exrop, {103, 104, 105})
+      iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
+      iex> env = RlStudy.MDP.Environment.new(grid)
+      iex> env = %{env | agent_state: RlStudy.MDP.State.new(2,0)}
+      iex> RlStudy.MDP.Environment.step(env, :up)
+      %{
+        done: false,
+        environment: %RlStudy.MDP.Environment{agent_state: %RlStudy.MDP.State{column: 0, row: 1}, default_reward: -0.04, grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]], move_probe: 0.8},
+        next_state: %RlStudy.MDP.State{column: 0, row: 1},
+        reward: -0.04
+      }
+      iex> env = %{env | agent_state: RlStudy.MDP.State.new(0,2)}
+      iex> RlStudy.MDP.Environment.step(env, :right)
+      %{
+        done: true,
+        environment: %RlStudy.MDP.Environment{agent_state: %RlStudy.MDP.State{column: 3, row: 0}, default_reward: -0.04, grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]], move_probe: 0.8},
+        next_state: %RlStudy.MDP.State{column: 3, row: 0},
+        reward: 1
+      }
   """
   @spec step(RlStudy.MDP.Environment.t(), RlStudy.MDP.Action.t()) :: %{
           done: boolean,
@@ -296,16 +317,12 @@ defmodule RlStudy.MDP.Environment do
     %{next_state: next_state, reward: reward, done: done} =
       transit(environment, environment.agent_state, action)
 
-    if next_state != nil do
-      %{
-        environment: %{environment | agent_state: next_state},
-        next_state: next_state,
-        reward: reward,
-        done: done
-      }
-    else
-      %{environment: environment, next_state: next_state, reward: reward, done: done}
-    end
+    %{
+      environment: %{environment | agent_state: next_state},
+      next_state: next_state,
+      reward: reward,
+      done: done
+    }
   end
 
   @doc """
@@ -326,7 +343,7 @@ defmodule RlStudy.MDP.Environment do
     transit_probes = transit_func(environment, state, action)
 
     if Kernel.map_size(transit_probes) == 0 do
-      Logger.info("No transit_probes.")
+      Logger.debug("No transit_probes.")
       %{environment: environment, next_state: nil, reward: nil, done: true}
     else
       Logger.debug("transit_probes: #{inspect(transit_probes)}")
@@ -334,7 +351,7 @@ defmodule RlStudy.MDP.Environment do
       %{reward: reward, done: done} = reward_func(environment, next_state)
 
       transit_to = %{next_state: next_state, reward: reward, done: done}
-      Logger.info("Transit to #{inspect(transit_to)}")
+      Logger.debug("Transit to #{inspect(transit_to)}")
       transit_to
     end
   end
