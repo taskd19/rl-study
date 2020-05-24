@@ -329,8 +329,6 @@ defmodule RlStudy.MDP.Environment do
       Logger.info("No transit_probes.")
       %{environment: environment, next_state: nil, reward: nil, done: true}
     else
-      # https://rosettacode.org/wiki/Probabilistic_choice#Elixir
-      # How to test https://github.com/elixir-lang/elixir/blob/v1.10/lib/elixir/lib/enum.ex#L1985-L1991
       Logger.debug("transit_probes: #{inspect(transit_probes)}")
       next_state = prob_choice(transit_probes, :rand.uniform())
       %{reward: reward, done: done} = reward_func(environment, next_state)
@@ -348,6 +346,11 @@ defmodule RlStudy.MDP.Environment do
   end
 
   defp prob_choice(probes, ran) when Kernel.map_size(probes) > 1 do
+    """
+    Algorithm https://rosettacode.org/wiki/Probabilistic_choice#Elixir
+    Run :rand.seed(:exrop, {101, 102, 103}) for test https://github.com/elixir-lang/elixir/blob/v1.10/lib/elixir/lib/enum.ex#L1985-L1991
+    """
+
     Logger.debug("probes: #{inspect(probes)}, ran: #{ran}")
     state_key = Enum.at(Map.keys(probes), 0)
     {:ok, prob} = Map.fetch(probes, state_key)
