@@ -1,14 +1,8 @@
 defmodule RlStudy.MDP.EnvironmentDemoTest do
   require Logger
   use ExUnit.Case
-
   alias RlStudy.MDP.Agent
   alias RlStudy.MDP.Environment
-
-  doctest RlStudy.MDP.Action
-  doctest RlStudy.MDP.Agent
-  doctest RlStudy.MDP.Environment
-  doctest RlStudy.MDP.State
 
   test "MDP demo" do
     grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
