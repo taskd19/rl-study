@@ -1,11 +1,19 @@
 defmodule RlStudy.DP.Planner do
   alias RlStudy.MDP.Environment
+  require Logger
+  require Matrix
+
+  @planner_data [env: nil, log: nil]
 
   @type t :: %RlStudy.DP.Planner{
           env: RlStudy.MDP.Environment.t(),
           log: [String.t()]
         }
-  defstruct [:env, :log]
+  defstruct @planner_data
+
+  def planner_data() do
+    @planner_data
+  end
 
   @spec initialize(RlStudy.DP.Planner.t()) :: RlStudy.DP.Planner.t()
   def initialize(planner) do
@@ -30,6 +38,12 @@ defmodule RlStudy.DP.Planner do
           RlStudy.MDP.Action.t()
         ) :: [%{prob: float(), next_state: RlStudy.MDP.State.t(), reward: float()}]
   def transitions_at(planner, state, action) do
+    Logger.debug(
+      "planner: #{inspect(planner, pretty: true)}, state: #{inspect(state, pretty: true)}, action: #{
+        inspect(action, pretty: true)
+      }"
+    )
+
     Environment.transit_func(planner.env, state, action)
     |> Enum.map(fn {state, prob} ->
       %{reward: reward, done: _} = Environment.reward_func(planner.env, state)
@@ -38,22 +52,26 @@ defmodule RlStudy.DP.Planner do
   end
 
   def dict_to_grid(planner, state_reward_dict) do
+    Logger.debug("planner: #{inspect(planner, pretty: true)}")
+    Logger.debug("state_reward_dict: #{inspect(state_reward_dict, pretty: true)}")
+
     row_length = Environment.row_length(planner.env)
     column_length = Environment.column_length(planner.env)
 
-    zero_grid =
-      Enum.map(1..row_length, fn _r ->
-        Enum.map(1..column_length, fn _c ->
-          0
-        end)
-      end)
+    zero_grid = Matrix.new(row_length, column_length)
+    # Enum.map(1..row_length, fn _r ->
+    #   Enum.map(1..column_length, fn _c ->
+    #     0
+    #   end)
+    # end)
 
     state_reward_dict
-    |> Enum.reduce(zero_grid, fn s, acc ->
+    |> Enum.reduce(zero_grid, fn {s, reward}, acc ->
+      Matrix.set(acc, s.row, s.column, reward)
       # TODO check impl
-      {row, _} = List.pop_at(acc, s.row)
-      updated_row = List.update_at(row, s.column, fn _ -> s.reward end)
-      List.update_at(acc, s.row, fn _ -> updated_row end)
+      # {row, _} = List.pop_at(acc, s.row)
+      # updated_row = List.update_at(row, s.column, fn _ -> s.reward end)
+      # List.update_at(acc, s.row, fn _ -> updated_row end)
     end)
   end
 end
