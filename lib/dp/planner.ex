@@ -1,7 +1,7 @@
 defmodule RlStudy.DP.Planner do
   alias RlStudy.MDP.Environment
   require Logger
-  require Matrix
+  require Matrex
 
   @planner_data [env: nil, log: nil]
 
@@ -58,20 +58,11 @@ defmodule RlStudy.DP.Planner do
     row_length = Environment.row_length(planner.env)
     column_length = Environment.column_length(planner.env)
 
-    zero_grid = Matrix.new(row_length, column_length)
-    # Enum.map(1..row_length, fn _r ->
-    #   Enum.map(1..column_length, fn _c ->
-    #     0
-    #   end)
-    # end)
+    zero_grid = Matrex.new(row_length, column_length, fn -> 0 end)
 
     state_reward_dict
     |> Enum.reduce(zero_grid, fn {s, reward}, acc ->
-      Matrix.set(acc, s.row, s.column, reward)
-      # TODO check impl
-      # {row, _} = List.pop_at(acc, s.row)
-      # updated_row = List.update_at(row, s.column, fn _ -> s.reward end)
-      # List.update_at(acc, s.row, fn _ -> updated_row end)
+      Matrex.set(acc, s.row + 1, s.column + 1, reward)
     end)
   end
 end
