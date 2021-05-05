@@ -16,7 +16,7 @@ defmodule RlStudy.DP.ValueIterationPlanner do
       Logger.info("planner: #{inspect(init_planner, pretty: true)}")
 
       v =
-        Environment.states(init_planner.env.environment)
+        Environment.states(init_planner.env)
         |> Map.new(fn v -> {v, 0} end)
 
       Logger.debug("v: #{inspect(v, pretty: true)}")

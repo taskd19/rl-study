@@ -264,23 +264,16 @@ defmodule RlStudy.MDP.Environment do
       iex> grid = [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]]
       iex> env = RlStudy.MDP.Environment.new(grid)
       iex> RlStudy.MDP.Environment.reset(env)
-      %{
+      %RlStudy.MDP.Environment{
         agent_state: %RlStudy.MDP.State{column: 0, row: 2},
-        environment: %RlStudy.MDP.Environment{
-          agent_state: %RlStudy.MDP.State{column: 0, row: 2},
-          default_reward: -0.04,
-          grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]],
-          move_probe: 0.8
-        }
+        default_reward: -0.04,
+        grid: [[0, 0, 0, 1], [0, 9, 0, -1], [0, 0, 0, 0]],
+        move_probe: 0.8
       }
   """
-  @spec reset(RlStudy.MDP.Environment.t()) :: %{
-          agent_state: RlStudy.MDP.State.t(),
-          environment: RlStudy.MDP.Environment.t()
-        }
+  @spec reset(RlStudy.MDP.Environment.t()) :: RlStudy.MDP.Environment.t()
   def reset(environment) do
-    new_env = %{environment | agent_state: State.new(row_length(environment) - 1, 0)}
-    %{environment: new_env, agent_state: new_env.agent_state}
+    %{environment | agent_state: State.new(row_length(environment) - 1, 0)}
   end
 
   @doc """
