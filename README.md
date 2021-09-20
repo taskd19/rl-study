@@ -19,3 +19,21 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/rl_study](https://hexdocs.pm/rl_study).
 
+## How to build
+
+```shell
+xcode-select --install
+mix deps.get
+# MaxOS 11.3
+C_INCLUDE_PATH=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers mix compile
+```
+
+## How to run tests
+
+```shell
+mix test
+```
+
+
+## References
+- https://github.com/versilov/matrex

@@ -17,14 +17,14 @@ defmodule RlStudy.MDP.EnvironmentDemoTest do
   end
 
   def run_game(episode, env, agent) do
-    %{agent_state: init_state, environment: init_env} = Environment.reset(env)
+    init_env = Environment.reset(env)
 
     game_step(
       step: 0,
       episode: episode,
       env: init_env,
       agent: agent,
-      state: init_state,
+      state: init_env.agent_state,
       total_reward: 0,
       done: false
     )
