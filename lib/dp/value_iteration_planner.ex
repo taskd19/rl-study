@@ -5,7 +5,7 @@ defmodule RlStudy.DP.ValueIterationPlanner do
 
   @type t :: %RlStudy.DP.ValueIterationPlanner{
           env: RlStudy.MDP.Environment.t(),
-          log: [String.t()]
+          log: [] | [String.t()]
         }
   defstruct Planner.planner_data()
 

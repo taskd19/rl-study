@@ -7,7 +7,7 @@ defmodule RlStudy.DP.Planner do
 
   @type t :: %RlStudy.DP.Planner{
           env: RlStudy.MDP.Environment.t(),
-          log: [String.t()]
+          log: [] | [String.t()]
         }
   defstruct @planner_data
 
@@ -22,6 +22,7 @@ defmodule RlStudy.DP.Planner do
 
   defprotocol Plan do
     @fallback_to_any true
+    @spec plan(%{env: RlStudy.MDP.Environment.t()}, float(), float()) :: float()
     def plan(planner, gamma \\ 0.9, threshold \\ 0.0001)
   end
 
@@ -39,9 +40,7 @@ defmodule RlStudy.DP.Planner do
         ) :: [%{prob: float(), next_state: RlStudy.MDP.State.t(), reward: float()}]
   def transitions_at(planner, state, action) do
     Logger.debug(
-      "planner: #{inspect(planner, pretty: true)}, state: #{inspect(state, pretty: true)}, action: #{
-        inspect(action, pretty: true)
-      }"
+      "planner: #{inspect(planner, pretty: true)}, state: #{inspect(state, pretty: true)}, action: #{inspect(action, pretty: true)}"
     )
 
     Environment.transit_func(planner.env, state, action)
